@@ -1,16 +1,33 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Todo, fetchTodos } from '../actions';
+import { Todo, fetchTodos, deleteTodo } from '../actions';
 import { StoreState } from '../reducers';
 
 interface AppProps {
   todos: Todo[];
-  fetchTodos(): any;
+  fetchTodos: Function;
+  deleteTodo: typeof deleteTodo;
 }
 
-class _App extends React.Component<AppProps> {
+interface AppState {
+  fetching: boolean;
+}
+
+class _App extends React.Component<AppProps, AppState> {
+  constructor(props: AppProps) {
+    super(props);
+    this.state = { fetching: false };
+  }
+
+  componentDidUpdate(prevProps: AppProps): void {
+    if (!prevProps.todos.length && this.props.todos.length) {
+      this.setState({ fetching: false });
+    }
+  }
+
   onButtonClick = (): void => {
     this.props.fetchTodos();
+    this.setState({ fetching: true });
   };
 
   renderList(): JSX.Element[] {
@@ -23,6 +40,7 @@ class _App extends React.Component<AppProps> {
     return (
       <div>
         <button onClick={this.onButtonClick}>Fetch</button>
+        {this.state.fetching && 'Loading'}
         {this.renderList()}
       </div>
     );
